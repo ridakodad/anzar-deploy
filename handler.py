@@ -5,6 +5,7 @@ import os
 import torch
 import soundfile as sf
 import numpy as np
+import librosa
 from transformers import AutoProcessor, Qwen2AudioForConditionalGeneration
 from peft import PeftModel
 
@@ -45,19 +46,14 @@ def handler(job):
             f.write(audio_bytes)
             tmp_path = f.name
 
-       audio_array, sr = sf.read(tmp_path)
-if audio_array.ndim > 1:
-    audio_array = audio_array.mean(axis=1)
-audio_array = audio_array.astype(np.float32)
-
-# Resample to 16kHz if needed
-if sr != 16000:
-    import librosa
-    audio_array = librosa.resample(audio_array, orig_sr=sr, target_sr=16000)
-    sr = 16000
+        audio_array, sr = sf.read(tmp_path)
         if audio_array.ndim > 1:
             audio_array = audio_array.mean(axis=1)
         audio_array = audio_array.astype(np.float32)
+
+        if sr != 16000:
+            audio_array = librosa.resample(audio_array, orig_sr=sr, target_sr=16000)
+            sr = 16000
 
         conversation = [{"role": "user", "content": [
             {"type": "audio", "audio_url": tmp_path},
