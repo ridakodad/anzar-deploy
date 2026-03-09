@@ -45,7 +45,16 @@ def handler(job):
             f.write(audio_bytes)
             tmp_path = f.name
 
-        audio_array, sr = sf.read(tmp_path)
+       audio_array, sr = sf.read(tmp_path)
+if audio_array.ndim > 1:
+    audio_array = audio_array.mean(axis=1)
+audio_array = audio_array.astype(np.float32)
+
+# Resample to 16kHz if needed
+if sr != 16000:
+    import librosa
+    audio_array = librosa.resample(audio_array, orig_sr=sr, target_sr=16000)
+    sr = 16000
         if audio_array.ndim > 1:
             audio_array = audio_array.mean(axis=1)
         audio_array = audio_array.astype(np.float32)
